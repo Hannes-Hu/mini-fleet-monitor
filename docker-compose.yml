@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # Database
+  db:
+    image: postgres:15-alpine
+    container_name: fleet-db
+    environment:
+      POSTGRES_DB: fleet_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:alpine
+    container_name: fleet-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+
+  # Backend API
+  backend:
+    image: node:18-alpine
+    container_name: fleet-backend
+    working_dir: /app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:password@db:5432/fleet_db
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: test123
+      JWT_EXPIRES_IN: 24h
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "
+        echo 'Installing backend dependencies...' &&
+        npm install &&
+        echo 'Starting backend server...' &&
+        npm start
+      "
+
+  # Frontend
+  frontend:
+    image: node:18-alpine
+    container_name: fleet-frontend
+    working_dir: /app
+    depends_on:
+      - backend
+    environment:
+      REACT_APP_API_URL: http://localhost:3000
+      CHOKIDAR_USEPOLLING: "true"
+      WDS_SOCKET_PORT: 0
+    ports:
+      - "8080:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: >
+      sh -c "
+        echo 'Installing frontend dependencies...' &&
+        npm install &&
+        echo 'Starting frontend development server...' &&
+        npm start
+      "
