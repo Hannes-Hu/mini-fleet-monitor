@@ -86,9 +86,8 @@ Liste aller Roboter mit Details und Steuerungsbuttons
 *Positionsverlauf und Reise-Statistiken*
 
 # Features
-## Muss- Kriterien (vollständig implementiert)
 
--  Backend: Node.js + Express mit PostgreSQL und Redis
+- Backend: Node.js + Express mit PostgreSQL und Redis
 - Frontend: React mit OpenLayers-Karte
 - Authentifizierung: JWT-basierter Login
 - Datenmodell: Users & Robots Tabellen
@@ -97,7 +96,7 @@ Liste aller Roboter mit Details und Steuerungsbuttons
 - Simulation: Automatische Positionsupdates alle 2 Sekunden
 - Docker Compose: Vollständige Container-Umgebung
 
-## Optionale Erweiterungen (implementiert)
+## Extras
 
 - Roboter hinzufügen: POST /api/robots
 - Redis-Cache: GET /robots Ergebnisse (TTL 10s)
@@ -163,3 +162,4 @@ npm test
 cd frontend
 npm test
 ```
+
